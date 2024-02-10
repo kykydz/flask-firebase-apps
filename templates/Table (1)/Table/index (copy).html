@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+<!--<![endif]-->
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>CRUD Table</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="app">
+        <div class="container container-custom">
+            <router-view></router-view>
+        </div>
+    </div>
+
+    <div id="custom-action-modal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Modal Header</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Some text in the modal.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://unpkg.com/vue-router@2.0.0/dist/vue-router.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.16.1/axios.min.js"></script>
+    <!-- <script src="https://unpkg.com/vuetable-2@1.7.2/dist/vuetable-2.js"></script> -->
+    <script src="https://unpkg.com/vuetable-2@next"></script>
+
+
+
+    <script>
+        /* ROUTER RELATED */
+        var mainUrl = 'https://innoteam-documents.appspot.com/documents';
+        var Create =
+        {
+            template:
+                `<div class="form-container">
+                    <div class="row">
+                        <div class="col-xs-12 text-center">
+                            <h2>Create New</h2>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group form-group-custom">
+                                <input type="text" class="form-control input-custom" id="document" placeholder=" ">
+                                <label for="document">Document</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group form-group-custom">
+                                <input type="text" class="form-control input-custom" id="country" placeholder=" ">
+                                <label for="country">Country:</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group form-group-custom">
+                                <input type="text" class="form-control input-custom" id="nrz" placeholder=" ">
+                                <label for="nrz">NRZ:</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group form-group-custom">
+                                <input type="text" class="form-control input-custom" id="alphahash" placeholder=" ">
+                                <label for="alphahash">Alphahash:</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group form-group-custom">
+                                <label for="picture">Picture:</label>
+                                <input type="file" class="form-control input-custom" id="picture">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group form-group-custom">
+                                <input type="text" class="form-control input-custom" id="dps" placeholder=" ">
+                                <label for="dps">DPS:</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12 text-right">
+                            <router-link to="/"><button class="btn btn-sm btn-danger">Cancel</button></router-link>
+                            <button class="btn btn-sm btn-custom" id="btn-create">Submit</button>
+                        </div>
+                    </div>
+                </div>`
+        }
+
+        var Edit =
+        {
+            template:
+                `<div class="form-container">
+                    <div class="row">
+                        <div class="col-xs-12 text-center">
+                            <h2>Edit{{ this.$route.params.id }}</h2>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group form-group-custom">
+                                <input type="text" class="form-control input-custom" id="document" placeholder=" ">
+                                <label for="document">Document</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group form-group-custom">
+                                <input type="text" class="form-control input-custom" id="country" placeholder=" ">
+                                <label for="country">Country:</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group form-group-custom">
+                                <input type="text" class="form-control input-custom" id="nrz" placeholder=" ">
+                                <label for="nrz">NRZ:</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group form-group-custom">
+                                <input type="text" class="form-control input-custom" id="alphahash" placeholder=" ">
+                                <label for="alphahash">Alphahash:</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group form-group-custom">
+                                <label for="picture">Picture:</label>
+                                <input type="file" class="form-control input-custom" id="picture">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group form-group-custom">
+                                <input type="text" class="form-control input-custom" id="dps" placeholder=" ">
+                                <label for="dps">DPS:</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12 text-right">
+                            <router-link to="/"><button class="btn btn-sm btn-danger">Cancel</button></router-link>
+                            <button class="btn btn-sm btn-custom" id="btn-create">Submit</button>
+                        </div>
+                    </div>
+                </div>`
+        }
+
+        var Table =
+        {
+            template:
+                `<div>
+                    <div class="text-right">
+                         <router-link to="/create"><button class="btn btn-sm btn-create">Create New</button></router-link>
+                    </div>
+                    <vuetable ref="vuetable" api-url="${mainUrl}" :fields="fields" :sort-order="sortOrder"
+                        :css="css.table" pagination-path="" :per-page="10" @vuetable:pagination-data="onPaginationData"
+                        @vuetable:loading="onLoading" @vuetable:loaded="onLoaded">
+
+                        <div slot="actions" slot-scope="props">
+                            <div class="table-button-container">
+                                <button class="btn btn-warning btn-sm btn-table-edit" @click="editRow(props.rowData)">
+                                    <span class="glyphicon glyphicon-pencil"></span> Edit
+                                </button>
+                                <button class="btn btn-custom-action btn-sm" data-toggle="modal" data-target="#custom-action-modal">
+                                    <span class="glyphicon glyphicon-th-large"></span> Custom Action
+                                </button>
+                                <button class="btn btn-danger btn-sm btn-table-delete" @click="deleteRow(props.rowData)">
+                                    <span class="glyphicon glyphicon-trash"></span> Delete
+                                </button>
+                            </div>
+                        </div>
+                    </vuetable>
+                    <vuetable-pagination ref="pagination" :css="css.pagination" @vuetable-pagination:change-page="onChangePage"></vuetable-pagination>
+                </div>`
+            ,
+            data: function () {
+                return {
+                    fields: [
+                        'alphahash', 'country', 'doctype', 'dps_score', 'key',
+                        {
+                            name: "mrz",
+                            titleClass: 'center aligned',
+                            dataClass: 'center aligned',
+                        },
+                        {
+                            name: "picture",
+                            formatter(value) {
+                                return '<img src="' + value + '" width="220px">';
+                            }
+                        },
+                        'actions'
+                    ],
+                    sortOrder: [
+                        { field: 'name', direction: 'asc' }
+                    ],
+                    css: {
+                        table: {
+                            tableClass: 'table table-custom table-hovered',
+                            loadingClass: 'loading',
+                            ascendingIcon: 'glyphicon glyphicon-chevron-up',
+                            descendingIcon: 'glyphicon glyphicon-chevron-down',
+                            handleIcon: 'glyphicon glyphicon-menu-hamburger',
+                        },
+                        pagination: {
+                            infoClass: 'pull-left',
+                            wrapperClass: 'vuetable-pagination vuetable-pagination-custom pull-right',
+                            activeClass: 'btn-primary',
+                            disabledClass: 'disabled',
+                            pageClass: 'btn btn-border',
+                            linkClass: 'btn btn-border',
+                            icons: {
+                                first: '',
+                                prev: '',
+                                next: '',
+                                last: '',
+                            },
+                        }
+                    }
+                }
+            },
+            methods: {
+                onPaginationData: function (paginationData) {
+                    this.$refs.pagination.setPaginationData(paginationData)
+                },
+                onChangePage: function (page) {
+                    this.$refs.vuetable.changePage(page)
+                },
+                editRow: function (rowData) {
+                    alert("You clicked edit on" + JSON.stringify(rowData))
+                },
+                deleteRow: function (rowData) {
+                    alert("You clicked delete on" + JSON.stringify(rowData))
+                },
+                onLoading: function () {
+                    console.log('loading... show your spinner here')
+                },
+                onLoaded: function () {
+                    console.log('loaded! .. hide your spinner here')
+                }
+            }
+        }
+
+        var routes = [
+            { path: '/create', component: Create },
+            { path: '/edit/:id', component: Edit },
+            { path: '/', component: Table }
+        ]
+
+        var router = new VueRouter({
+            routes: routes // short for `routes: routes`
+        })
+        /* ROUTER RELATED END */
+
+
+        Vue.use(Vuetable);
+        var app = new Vue({
+            // el: '#app',
+            router: router,
+            components: {
+                'vuetable-pagination': Vuetable.VuetablePagination
+            }
+        }).$mount('#app')
+    </script>
+
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+        crossorigin="anonymous"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+<!--<![endif]-->
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>CRUD Table</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+        crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+    <div id="app">
+        <div class="container container-custom">
+            <router-view></router-view>
+        </div>
+    </div>
+
+    <div id="custom-action-modal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Modal Header</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Some text in the modal.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://unpkg.com/vue-router@2.0.0/dist/vue-router.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.16.1/axios.min.js"></script>
+    <!-- <script src="https://unpkg.com/vuetable-2@1.7.2/dist/vuetable-2.js"></script> -->
+    <script src="https://unpkg.com/vuetable-2@next"></script>
+
+
+
+    <script>
+        /* ROUTER RELATED */
+        var mainUrl = 'http://localhost:8080';
+
+        var Table =
+        {
+            template:
+                `<div>
+                    <div class="text-right">
+                         <router-link to="/create"><button class="btn btn-sm btn-create">Create New</button></router-link>
+                    </div>
+                    <div class="loading-wrapper relative">
+                        <svg class="spinner" width="65px" height="65px" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+                            <circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
+                        </svg>
+                        <p>Loading Data..</p>
+                    </div>
+                    <vuetable ref="vuetable" api-url="${mainUrl}" :fields="fields" :sort-order="sortOrder"
+                        :css="css.table" pagination-path="" :per-page="10" :http-options="{auth:{username:'user', password: 'pass' }}" @vuetable:pagination-data="onPaginationData"
+                        @vuetable:loading="onLoading" @vuetable:loaded="onLoaded">
+
+                        <div slot="actions" slot-scope="props">
+                            <div class="table-button-container">
+                                <button class="btn btn-warning btn-sm btn-table-edit" @click="editRow(props.rowData)">
+                                    <span class="glyphicon glyphicon-pencil"></span> Edit
+                                </button>
+                                <button class="btn btn-custom-action btn-sm" @click="recomputeDPS(props.rowData)">
+                                    <span class="glyphicon glyphicon-th-large"></span> Custom Action
+                                </button>
+                                <button class="btn btn-danger btn-sm btn-table-delete" @click="deleteRow(props.rowData)">
+                                    <span class="glyphicon glyphicon-trash"></span> Delete
+                                </button>
+                            </div><div class="loading-wrapper" v-bind:class="{ active: this.isLoading }">
+                            <svg class="spinner" width="65px" height="65px" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+                                <circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
+                            </svg>
+                        </div>
+                        </div>
+                    </vuetable>
+                    <vuetable-pagination ref="pagination" :css="css.pagination" @vuetable-pagination:change-page="onChangePage"></vuetable-pagination>
+                </div>`
+            ,
+            data: function () {
+                return {
+                    fields: [
+                        'alphahash', 'country', 'doctype', 'dps_score', 'key',
+                        {
+                            name: "mrz",
+                            titleClass: 'center aligned',
+                            dataClass: 'center aligned',
+                        },
+                        {
+                            name: "picture",
+                            formatter(value) {
+                                return '<img src="' + value + '" width="220px">';
+                            }
+                        },
+                        'actions'
+                    ],
+                    sortOrder: [
+                        { field: 'name', direction: 'asc' }
+                    ],
+                    css: {
+                        table: {
+                            tableClass: 'table table-custom table-hovered',
+                            loadingClass: 'loading',
+                            ascendingIcon: 'glyphicon glyphicon-chevron-up',
+                            descendingIcon: 'glyphicon glyphicon-chevron-down',
+                            handleIcon: 'glyphicon glyphicon-menu-hamburger',
+                        },
+                        pagination: {
+                            infoClass: 'pull-left',
+                            wrapperClass: 'vuetable-pagination vuetable-pagination-custom pull-right',
+                            activeClass: 'btn-primary',
+                            disabledClass: 'disabled',
+                            pageClass: 'btn btn-border',
+                            linkClass: 'btn btn-border',
+                            icons: {
+                                first: '',
+                                prev: '',
+                                next: '',
+                                last: '',
+                            },
+                        }
+                    }
+                }
+            },
+            methods: {
+                onPaginationData: function (paginationData) {
+                    this.$refs.pagination.setPaginationData(paginationData)
+                },
+                onChangePage: function (page) {
+                    this.$refs.vuetable.changePage(page)
+                },
+                editRow: function (rowData) {
+                    var keyRoute = rowData.key;
+                    keyRoute = keyRoute.replace(/\"/g, "");
+                    this.$router.push({ name: 'edit', params: { id: keyRoute } })
+                    // alert("You clicked edit on" + JSON.stringify(rowData))
+                },
+                recomputeDPS: function (rowData) {
+                    console.log(rowData);
+                    axios.put(mainUrl + '/' + rowData.key + '/dps_score', {})
+                        .then(function (response) {
+                            console.log(response);
+                            swal({
+                                title: "Success!",
+                                text: "Any changes of the document has been saved!",
+                                icon: "success",
+                                button: "OK, Cool!",
+                            });
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+                },
+                deleteRow: function (rowData) {
+                    var self = this;
+                    swal({
+                        title: "Are you sure?",
+                        text: "Once deleted, you will not be able to recover this document!",
+                        icon: "warning",
+                        buttons: true,
+                        dangerMode: true,
+                    })
+                        .then(function (willDelete) {
+                            if (willDelete) {
+                                axios.delete(mainUrl + '/' + rowData.key, {
+                                })
+                                    .then(function (response) {
+                                        console.log(response);
+                                        swal({
+                                            title: "Success!",
+                                            text: "The document has been deleted!",
+                                            icon: "success",
+                                            button: "OK, Cool!",
+                                        });
+                                        self.$refs.vuetable.refresh();
+                                    })
+                                    .catch(function (error) {
+                                        console.log(error);
+                                    });
+                            }
+                        });
+                },
+                onLoading: function () {
+                    console.log('loading... show your spinner here')
+                    document.querySelector('.loading-wrapper.relative').classList.add('active');
+                },
+                onLoaded: function () {
+                    console.log('loaded! .. hide your spinner here')
+                    document.querySelector('.loading-wrapper.relative').classList.remove('active');
+                }
+            }
+        }
+
+        var Create =
+        {
+            template:
+                `<div>
+                    <div class="form-container">
+                        <div class="loading-wrapper" v-bind:class="{ active: this.isLoading }">
+                            <svg class="spinner" width="65px" height="65px" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+                                <circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
+                            </svg>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12 text-center">
+                                <h2>Create New</h2>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="form-group form-group-custom">
+                                    <input type="text" class="form-control input-custom" id="alphahash" placeholder=" " v-model="documentData.alphahash">
+                                    <label for="alphahash">Alphahash:</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="form-group form-group-custom">
+                                    <input type="text" class="form-control input-custom" id="country" placeholder=" " v-model="documentData.country">
+                                    <label for="country">Country:</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="form-group form-group-custom">
+                                    <input type="text" class="form-control input-custom" id="doctype" placeholder=" " v-model="documentData.doctype">
+                                    <label for="doctype">Doctype</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="form-group form-group-custom">
+                                    <textarea type="text" class="form-control input-custom" id="mrz" placeholder=" " v-model="documentData.mrz" rows="4"></textarea>
+                                    <label for="mrz">MRZ:</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="form-group form-group-custom">
+                                    <label for="picture">Picture:</label>
+                                    <input type="file" class="form-control input-custom" id="picture" @change="setImage">
+                                    <img :src="documentData.picture" width="220px">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12 text-right">
+                                <router-link to="/"><button class="btn btn-sm btn-danger">Cancel</button></router-link>
+                                <button class="btn btn-sm btn-custom" id="btn-create" @click="createDocument">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!--<div class="progress-bar">
+                        <div class="indeterminate"></div>
+                    </div>-->
+                </div>`,
+            data: function () {
+                return {
+                    documentData: {},
+                    isLoading: false
+                }
+            },
+            methods: {
+                createDocument: function () {
+                    var self = this;
+
+                    var alphahash = document.querySelector('input#alphahash');
+                    var country = document.querySelector('input#country');
+                    var doctype = document.querySelector('input#doctype');
+                    var mrz = document.querySelector('textarea#mrz');
+                    var picture = '';
+
+                    self.isLoading = true;
+                    axios.post(mainUrl, {
+                        doctype: self.documentData.doctype,
+                        country: self.documentData.country,
+                        alphahash: self.documentData.alphahash,
+                        mrz: self.documentData.mrz,
+                        picture: self.documentData.picture
+                    }, {
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'mode': 'norm'
+                            }
+                        })
+                        .then(function (response) {
+                            console.log(response);
+                            self.isLoading = false;
+                            swal({
+                                title: "Success!",
+                                text: "The document has been submitted!",
+                                icon: "success",
+                                button: "OK, Cool!",
+                            });
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+                },
+                setImage(e) {
+                    var file = e.target.files[0];
+                    var self = this;
+
+                    if (!file.type.includes("image/")) {
+                        alert("Please select an image file");
+                        return;
+                    }
+
+                    if (typeof FileReader === "function") {
+                        var reader = new FileReader();
+
+                        reader.onload = function (event) {
+                            var base64 = event.target.result;
+                            self.documentData.picture = base64;
+                            console.log(self.documentData.picture);
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        alert("Sorry, FileReader API not supported");
+                    }
+                }
+            }
+        }
+
+        var Edit =
+        {
+            template:
+                `<div class="form-container">
+                    <div class="loading-wrapper" v-bind:class="{ active: this.isLoading }">
+                        <svg class="spinner" width="65px" height="65px" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg">
+                            <circle class="path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
+                        </svg>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12 text-center">
+                            <h2>Edit</h2>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group form-group-custom">
+                                <input type="text" class="form-control input-custom" id="alphahash" placeholder=" " v-model="documentData.alphahash">
+                                <label for="alphahash">Alphahash:</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group form-group-custom">
+                                <input type="text" class="form-control input-custom" id="country" placeholder=" " v-model="documentData.country">
+                                <label for="country">Country:</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group form-group-custom">
+                                <input type="text" class="form-control input-custom" id="doctype" placeholder=" " v-model="documentData.doctype">
+                                <label for="doctype">Doctype</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group form-group-custom">
+                                <textarea type="text" class="form-control input-custom" id="mrz" placeholder=" " v-model="documentData.mrz" rows="4"></textarea>
+                                <label for="mrz">MRZ:</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group form-group-custom">
+                                <label for="picture">Picture:</label>
+                                <input type="file" class="form-control input-custom" id="picture" @change="setImage">
+                                <img :src="documentData.picture" width="220px">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-12 text-right">
+                            <router-link to="/"><button class="btn btn-sm btn-danger">Cancel</button></router-link>
+                            <button class="btn btn-sm btn-custom" id="btn-create" @click="saveDocument">Submit</button>
+                        </div>
+                    </div>
+                </div>`,
+            data: function () {
+                return {
+                    documentData: {},
+                    isLoading: false
+                }
+            },
+            created: function () {
+                var self = this;
+
+                var alphahash = document.querySelector('input#alphahash');
+                var country = document.querySelector('input#country');
+                var doctype = document.querySelector('input#doctype');
+                var mrz = document.querySelector('textarea#mrz');
+                var picture = document.querySelector('input#picture');
+
+                self.isLoading = true;
+
+                axios.get(mainUrl + '/' + this.$route.params.id)
+                    .then(function (response) {
+                        self.documentData = response.data.data;
+                        self.isLoading = false;
+                    })
+                    .catch(function (error) {
+                        // handle error
+                        console.log(error);
+                    });
+            },
+            methods: {
+                saveDocument: function () {
+                    var self = this;
+                    axios.put(mainUrl + '/' + this.$route.params.id, {
+                        doctype: self.documentData.doctype,
+                        country: self.documentData.country,
+                        alphahash: self.documentData.alphahash,
+                        mrz: self.documentData.mrz,
+                        picture: self.documentData.picture
+                    })
+                        .then(function (response) {
+                            console.log(response);
+                            swal({
+                                title: "Success!",
+                                text: "Any changes of the document has been saved!",
+                                icon: "success",
+                                button: "OK, Cool!",
+                            });
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+                },
+                setImage(e) {
+                    var file = e.target.files[0];
+                    var self = this;
+
+                    if (!file.type.includes("image/")) {
+                        alert("Please select an image file");
+                        return;
+                    }
+
+                    if (typeof FileReader === "function") {
+                        var reader = new FileReader();
+
+                        reader.onload = function (event) {
+                            var base64 = event.target.result;
+                            self.documentData.picture = base64;
+                        };
+                        console.log(self.documentData);
+                        reader.readAsDataURL(file);
+                    } else {
+                        alert("Sorry, FileReader API not supported");
+                    }
+                }
+            }
+        }
+
+        var routes = [
+            { path: '/create', name: 'create', component: Create },
+            { path: '/edit/:id', name: 'edit', component: Edit },
+            { path: '/', component: Table }
+        ]
+
+        var router = new VueRouter({
+            routes: routes // short for `routes: routes`
+        })
+        /* ROUTER RELATED END */
+
+
+        Vue.use(Vuetable);
+        var app = new Vue({
+            // el: '#app',
+            router: router,
+            components: {
+                'vuetable-pagination': Vuetable.VuetablePagination
+            }
+        }).$mount('#app')
+    </script>
+
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+        crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

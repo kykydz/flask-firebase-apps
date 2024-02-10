@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Test FireStore</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    
+    <script src="https://www.gstatic.com/firebasejs/5.5.6/firebase.js"></script>
+
+    <script type="module">
+        import config from '../static/js/config.js'
+
+        // Initialize Firebase
+        firebase.initializeApp(config);
+
+        firebase.database().ref().child("data").on("value", function (snapshot) {
+            snapshot.forEach(function(childSnapshot) {
+                var thiss=childSnapshot.val();
+                console.log(thiss);
+            });
+        });
+
+    </script>
+</head>
+<body>
+    
+</body>
+</html>

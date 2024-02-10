@@ -1,0 +1,9 @@
+pip install -r ./requirements.txt -t ./lib
+
+https://firebase.google.com/docs/database/web/lists-of-data
+https://www.tutorialspoint.com/firebase/firebase_read_data.htm
+https://www.tutorialspoint.com/firebase/firebase_queries.htm
+https://www.tutorialspoint.com/firebase/firebase_filtering_data.htm
+https://stackoverflow.com/questions/41291980/how-to-get-the-value-of-children-in-firebase-javascript
+https://firebase.googleblog.com/2014/04/best-practices-arrays-in-firebase.html
+https://stackoverflow.com/questions/51027846/how-to-get-specific-value-or-row-data-from-firebase-in-web

@@ -1,0 +1,4 @@
+requests
+requests-toolbelt
+flask-cors
+flask_basicauth
